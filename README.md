@@ -151,12 +151,72 @@ Prerequisites
 
 ## Installation
 
-
 Clone repository:
 
-```s
+```sh
 git clone https://github.com/armangonca/slipbud.git
 cd slipbud
+```
+
+Install Foundry (smart contract toolchain):
+
+```sh
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+```
+
+Install contract dependencies:
+
+```sh
+forge install
+```
+
+Build contracts:
+
+```sh
+forge build
+```
+
+Install bot dependencies (requires Node.js 18+):
+
+```sh
+cd bot
+npm install
+```
+
+Copy environment file and fill in your keys:
+
+```sh
+cp .env.example .env
+```
+
+Required `.env` values:
+- `PRIVATE_KEY` — deployer/bot wallet private key
+- `RPC_URL` — Alchemy or Infura RPC endpoint
+- `BOT_ADDRESS` — bot wallet address
+- `ANTHROPIC_API_KEY` — Claude API key
+
+Run the bot:
+
+```sh
+npm run dev
+```
+
+Deploy contracts (example: Sepolia testnet):
+
+```sh
+cd ..
+forge script script/SlipBudDeployScript.s.sol --rpc-url $RPC_URL --broadcast
+```
+
+Run tests:
+
+```sh
+# Solidity tests
+forge test
+
+# Bot tests
+cd bot && npm test
 ```
 
 

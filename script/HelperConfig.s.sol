@@ -146,9 +146,8 @@ contract HelperConfig is Script {
         return routers;
     }
 
-    /// @notice Ethereum mainnet tokenlarını döner — diğer ağlar için genişletilecek
+    /// @notice Ağa göre izinli token listesini döner
     function getAllowedTokens() external view returns (address[] memory) {
-        // Her ağda en azından WETH (veya wrapped native) izinli
         address[] memory tokens;
 
         if (block.chainid == ETH_MAINNET || block.chainid == ANVIL) {
@@ -158,8 +157,29 @@ contract HelperConfig is Script {
             tokens[2] = 0xdAC17F958D2ee523a2206206994597C13D831ec7; // USDT
             tokens[3] = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // DAI
             tokens[4] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599; // WBTC
+        } else if (block.chainid == POLYGON) {
+            tokens = new address[](5);
+            tokens[0] = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270; // WMATIC
+            tokens[1] = 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619; // WETH
+            tokens[2] = 0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359; // USDC
+            tokens[3] = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F; // USDT
+            tokens[4] = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI
+        } else if (block.chainid == ARBITRUM) {
+            tokens = new address[](5);
+            tokens[0] = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1; // WETH
+            tokens[1] = 0xaf88d065e77c8cC2239327C5EDb3A432268e5831; // USDC
+            tokens[2] = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9; // USDT
+            tokens[3] = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1; // DAI
+            tokens[4] = 0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f; // WBTC
+        } else if (block.chainid == BASE) {
+            tokens = new address[](3);
+            tokens[0] = 0x4200000000000000000000000000000000000006; // WETH
+            tokens[1] = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913; // USDC
+            tokens[2] = 0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb; // DAI
+        } else if (block.chainid == ETH_SEPOLIA) {
+            tokens = new address[](1);
+            tokens[0] = 0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14; // WETH
         } else {
-            // Diğer ağlarda sadece wrapped native
             tokens = new address[](1);
             tokens[0] = activeConfig.weth;
         }

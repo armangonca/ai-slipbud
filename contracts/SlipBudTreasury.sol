@@ -176,6 +176,11 @@ contract SlipBudTreasury is
 
     // ---- ERC4626 Override ---- //
 
+    /// @notice Inflation attack koruması — sanal offset ile rounding manipülasyonunu engeller.
+    function _decimalsOffset() internal pure override returns (uint8) {
+        return 6;
+    }
+
     /// @notice Bot'un aktif borcu dahil toplam varlık — share fiyatını korur.
     function totalAssets() public view override(ERC4626, IERC4626) returns (uint256) {
         return IERC20(asset()).balanceOf(address(this)) + _botDebt;
