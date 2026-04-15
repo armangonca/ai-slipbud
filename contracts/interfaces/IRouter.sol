@@ -26,6 +26,14 @@ interface IRouter {
         bytes swapData; // flashloan içinde çalıştırılacak swap datası
     }
 
+    /// @notice Atomik arbitraj parametreleri — pull + buy + sell + return tek TX'te
+    struct ArbitrageParams {
+        uint256 pullAmount; // Treasury'den çekilecek toplam miktar (buffer dahil)
+        SwapParams buySwap; // buySwap.amountIn = optimal trade miktarı (<= pullAmount)
+        SwapParams sellSwap;
+        address profitToken; // karın geri döneceği token (genelde tokenIn)
+    }
+
     // ---- Events ---- //
     event SwapExecuted(
         address indexed tokenIn,
@@ -34,13 +42,11 @@ interface IRouter {
         uint256 amountOut,
         address indexed dexRouter
     );
-    event FlashLoanExecuted(
-        address indexed token,
-        uint256 amount,
-        uint256 profit
-    );
+    event FlashLoanExecuted(address indexed token, uint256 amount, uint256 profit);
+    event ArbitrageExecuted(address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 profit);
     event ProfitSentToTreasury(address indexed token, uint256 amount);
     event RouterUpdated(address indexed router, bool allowed);
+    event TokenUpdated(address indexed token, bool allowed);
 
     // ---- Errors ---- //
     error IRouter__SwapFailed();
@@ -51,13 +57,18 @@ interface IRouter {
     error IRouter__ZeroAmount();
     error IRouter__ZeroAddress();
     error IRouter__InvalidSwapType();
+    error IRouter__Unauthorized();
+    error IRouter__InvalidSwapCount();
+    error IRouter__TokenNotAllowed(address token);
+    error IRouter__PullAmountTooLow();
 
     // ---- Functions ---- //
 
     /// @notice DEX üzerinde swap yap (V2 veya V3)
-    function executeSwap(
-        SwapParams calldata params
-    ) external returns (uint256 amountOut);
+    function executeSwap(SwapParams calldata params) external returns (uint256 amountOut);
+
+    /// @notice Atomik arbitraj: pull + buy + sell + return tek TX'te
+    function executeArbitrage(ArbitrageParams calldata params) external returns (uint256 profit);
 
     /// @notice Aave flashloan başlat ve arbitraj yap
     function executeFlashLoan(FlashLoanParams calldata params) external;

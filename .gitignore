@@ -12,3 +12,8 @@ docs/
 
 # Dotenv file
 .env
+
+# Bot
+bot/node_modules/
+bot/dist/
+bot/data/

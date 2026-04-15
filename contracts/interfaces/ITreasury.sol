@@ -14,27 +14,26 @@ interface ITreasury is IERC4626 {
     }
 
     // ---- Events ---- //
-    event BotWithdraw(
-        address indexed token,
-        uint256 amount,
-        address indexed to
-    );
-    event ProfitDeposited(address indexed token, uint256 amount);
+    event FundsPulled(address indexed token, uint256 amount, address indexed to);
+    event ProfitRecorded(address indexed token, uint256 profit, uint256 returned);
     event BotAllowanceSet(address indexed token, uint256 amount);
     event EmergencyWithdraw(address indexed token, uint256 amount);
+    event AdminWithdraw(address indexed token, address to, uint256 amount);
 
     // ---- Errors ---- //
     error ITreasury__ExceedsBotAllowance(uint256 requested, uint256 available);
     error ITreasury__ZeroAmount();
     error ITreasury__ZeroAddress();
+    error ITreasury__NotEnoughBalance();
+    error ITreasury__ExceedsDebtCeiling(uint256 newDebt, uint256 maxDebt);
 
     // ---- Functions ---- //
 
-    /// @notice Bot'un trade için fon çekmesi (allowance limiti dahilinde)
-    function withdrawForBot(address token, uint256 amount, address to) external;
+    /// @notice Router'ın trade için Treasury'den fon çekmesi (allowance limiti dahilinde)
+    function pullForBot(address token, uint256 amount) external;
 
-    /// @notice Router'dan gelen karı kasaya yatırma
-    function depositProfit(address token, uint256 amount) external;
+    /// @notice Router trade sonrası karı kaydeder (fonlar zaten transfer edilmiş olmalı)
+    function recordProfit(address token, uint256 profit, uint256 returned) external;
 
     /// @notice Bot'un belirli bir token için çekebileceği max limiti ayarla
     function setBotAllowance(address token, uint256 amount) external;

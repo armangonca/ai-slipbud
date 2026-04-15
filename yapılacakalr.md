@@ -31,3 +31,8 @@ Celo protocol
 
 1. İlk olarak kasayı yazmam gerekiyor kasanın tek kullanıcısı bot olacak ancak owner olarak msg.sender belirlenecek böylelikle çekim işlemleri msg.sender tarafından kullanılacak
 2. router contractı içerisinde şimdilik sushi swap ve uniswap router addresleri olmalı ki contract bakiye kullanma onayını versin router contractı başarılı gerçekleşen işlemlerden sonra eline geçen karı kasaya aktarmalı ve tabiki fonksiyonları sadece agent(bot) ve msg.sender kullanabilmeli 
+
+
+# Kalan İşler
+- Testler !!!
+- Belki Account Abstraction
