@@ -10,7 +10,7 @@ import {
     ERC20,
     IERC20
 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import {MockERC20} from "test/MockERC20.sol";
+import {MockERC20} from "test/mocks/MockERC20.sol";
 import {SlipBudTreasury} from "contracts/SlipBudTreasury.sol";
 
 contract SlipBudTreasuryTest is Test {

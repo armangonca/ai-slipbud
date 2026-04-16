@@ -1,62 +1,60 @@
-//SPDX-License-Identifier: MIT
-
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
-import {MockERC20} from "test/MockERC20.sol";
 import {SlipBudRouter} from "contracts/SlipBudRouter.sol";
 import {SlipBudTreasury} from "contracts/SlipBudTreasury.sol";
 import {SlipBudFactory} from "contracts/SlipBudFactory.sol";
-import {ITreasury} from "contracts/interfaces/ITreasury.sol";
-import {IRouter} from "contracts/interfaces/IRouter.sol";
-import {HelperConfig} from "script/HelperConfig.s.sol";
-import {SlipBudDeployScript} from "script/SlipBudDeployScript.s.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract BaseTest is Test {
-    SlipBudDeployScript public deployer;
-    SlipBudRouter public router;
-    SlipBudTreasury public treasury;
-    SlipBudFactory public factory;
-    HelperConfig public config;
-    address public aaveV3Pool;
-    address public uniswapV2Router;
-    address public uniswapV3Router;
-    address public sushiswapRouter;
-    address public wethAddress;
-    address public usdcAddress;
-    address public usdtAddress;
-    address public daiAddress;
-    address public wbtcAddress;
-    MockERC20 public weth;
-    MockERC20 public usdc;
-    MockERC20 public usdt;
-    MockERC20 public dai;
-    MockERC20 public wbtc;
-    MockERC20 public awethTokenMock;
-    MockERC20 public ausdcTokenMock;
-    MockERC20 public ausdtTokenMock;
-    MockERC20 public adaiTokenMock;
-    MockERC20 public awbtcTokenMock;
-    function setUp() public virtual {
-        deployer = new SlipBudDeployScript();
-        (treasury, router) = deployer.run();
+/// @title BaseTest
+/// @notice Unit ve fork testlerin ortak iskeleti. Türetilen sınıf `setUp` içinde
+///         deploy ve token adreslerini doldurur, `_fund`'u override eder.
+abstract contract BaseTest is Test {
+    // ---- Deployed contracts ---- //
+    SlipBudTreasury internal treasury;
+    SlipBudRouter internal router;
+    SlipBudFactory internal factory;
 
-        (
-            aaveV3Pool,
-            uniswapV2Router,
-            uniswapV3Router,
-            sushiswapRouter,
-            wethAddress,
-            usdcAddress,
-            usdtAddress,
-            daiAddress,
-            wbtcAddress
-        ) = config.activeConfig();
+    // ---- Token addresses ---- //
+    address internal weth;
+    address internal usdc;
+    address internal usdt;
+    address internal dai;
+    address internal wbtc;
 
-        weth = MockERC20(wethAddress);
-        usdc = MockERC20(usdcAddress);
-        usdt = MockERC20(usdtAddress);
-        dai = MockERC20(daiAddress);
-        wbtc = MockERC20(wbtcAddress);
+    // ---- External protocol addresses ---- //
+    address internal uniV2Router;
+    address internal uniV3Router;
+    address internal sushiRouter;
+    address internal aavePool;
+
+    // ---- Actors ---- //
+    address internal admin = makeAddr("admin");
+    address internal bot = makeAddr("bot");
+    address internal user = makeAddr("user");
+    address internal attacker = makeAddr("attacker");
+
+    // ---- Abstract helpers ---- //
+
+    /// @notice Türetilen test, kendi ortamına göre token fonlamasını yapar.
+    ///         Unit: MockERC20.mint — Fork: deal cheatcode.
+    function _fund(address token, address to, uint256 amount) internal virtual;
+
+    // ---- Shared helpers ---- //
+
+    /// @notice Kullanıcıya token basar ve vault'a deposit eder
+    function _depositAsUser(address from, uint256 amount) internal {
+        _fund(weth, from, amount);
+        vm.startPrank(from);
+        IERC20(weth).approve(address(treasury), amount);
+        treasury.deposit(amount, from);
+        vm.stopPrank();
+    }
+
+    /// @notice Bot'a token allowance ver (admin olarak çağır)
+    function _setBotAllowance(address token, uint256 amount) internal {
+        vm.prank(admin);
+        treasury.setBotAllowance(token, amount);
     }
 }
