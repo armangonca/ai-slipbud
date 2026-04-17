@@ -3,31 +3,17 @@ pragma solidity 0.8.30;
 
 import {ITreasury} from "./interfaces/ITreasury.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
-import {
-    ERC4626,
-    ERC20,
-    IERC20
-} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import {ERC4626, ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
-import {
-    ReentrancyGuard
-} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {
-    SafeERC20
-} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 /// @title SlipBudTreasury
 /// @notice Arbitraj botunun fonlarını saklayan ve yöneten vault kontratı.
 ///         ERC4626 tabanlı, AccessControl ile korunan kasa.
 ///         Router pull-based mekanizmayla fon çeker, trade sonrası geri gönderir.
-contract SlipBudTreasury is
-    ITreasury,
-    ERC4626,
-    AccessControl,
-    ReentrancyGuard,
-    Pausable
-{
+contract SlipBudTreasury is ITreasury, ERC4626, AccessControl, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
 
     // ---- Roles ---- //
@@ -48,9 +34,7 @@ contract SlipBudTreasury is
     uint256 private _maxBotDebt;
 
     // ---- Constructor ---- //
-    constructor(
-        ConstructorData memory params
-    ) ERC4626(params.asset) ERC20(params.vaultName, params.vaultSymbol) {
+    constructor(ConstructorData memory params) ERC4626(params.asset) ERC20(params.vaultName, params.vaultSymbol) {
         if (params.bot == address(0)) revert ITreasury__ZeroAddress();
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -62,10 +46,13 @@ contract SlipBudTreasury is
     // ---- Router Fonksiyonları (Pull-Based) ---- //
 
     /// @inheritdoc ITreasury
-    function pullForBot(
-        address token,
-        uint256 amount
-    ) external override nonReentrant onlyRole(ROUTER_ROLE) whenNotPaused {
+    function pullForBot(address token, uint256 amount)
+        external
+        override
+        nonReentrant
+        onlyRole(ROUTER_ROLE)
+        whenNotPaused
+    {
         if (amount == 0) revert ITreasury__ZeroAmount();
 
         uint256 currentAllowance = _botAllowance[token];
@@ -91,11 +78,12 @@ contract SlipBudTreasury is
     }
 
     /// @inheritdoc ITreasury
-    function recordProfit(
-        address token,
-        uint256 profit,
-        uint256 returned
-    ) external override onlyRole(ROUTER_ROLE) whenNotPaused {
+    function recordProfit(address token, uint256 profit, uint256 returned)
+        external
+        override
+        onlyRole(ROUTER_ROLE)
+        whenNotPaused
+    {
         _totalProfit[token] += profit;
 
         // Vault asset geri dönüyorsa borcu azalt
@@ -109,20 +97,13 @@ contract SlipBudTreasury is
     // ---- Admin Fonksiyonları ---- //
 
     /// @inheritdoc ITreasury
-    function setBotAllowance(
-        address token,
-        uint256 amount
-    ) external override onlyRole(ADMIN_ROLE) {
+    function setBotAllowance(address token, uint256 amount) external override onlyRole(ADMIN_ROLE) {
         _botAllowance[token] = amount;
 
         emit BotAllowanceSet(token, amount);
     }
 
-    function adminWithdraw(
-        address token,
-        address to,
-        uint256 amount
-    ) external nonReentrant onlyRole(ADMIN_ROLE) {
+    function adminWithdraw(address token, address to, uint256 amount) external nonReentrant onlyRole(ADMIN_ROLE) {
         if (to == address(0)) revert ITreasury__ZeroAddress();
         if (amount == 0) revert ITreasury__ZeroAmount();
 
@@ -148,10 +129,7 @@ contract SlipBudTreasury is
     }
 
     /// @inheritdoc ITreasury
-    function emergencyWithdraw(
-        address token,
-        address to
-    ) external override nonReentrant onlyRole(ADMIN_ROLE) {
+    function emergencyWithdraw(address token, address to) external override nonReentrant onlyRole(ADMIN_ROLE) {
         if (to == address(0)) revert ITreasury__ZeroAddress();
 
         uint256 balance = IERC20(token).balanceOf(address(this));
@@ -188,42 +166,34 @@ contract SlipBudTreasury is
     }
 
     /// @notice Bot'un aktif borcu dahil toplam varlık — share fiyatını korur.
-    function totalAssets()
-        public
-        view
-        override(ERC4626, IERC4626)
-        returns (uint256)
-    {
+    function totalAssets() public view override(ERC4626, IERC4626) returns (uint256) {
         return IERC20(asset()).balanceOf(address(this)) + _botDebt;
     }
 
     /// @notice Sadece admin deposit yapabilir, pause aktifken engellenir
-    function _deposit(
-        address caller,
-        address receiver,
-        uint256 assets,
-        uint256 shares
-    ) internal override whenNotPaused onlyRole(ADMIN_ROLE) {
+    function _deposit(address caller, address receiver, uint256 assets, uint256 shares)
+        internal
+        override
+        whenNotPaused
+        onlyRole(ADMIN_ROLE)
+    {
         super._deposit(caller, receiver, assets, shares);
     }
 
     /// @notice Sadece admin withdraw yapabilir, pause aktifken engellenir
-    function _withdraw(
-        address caller,
-        address receiver,
-        address owner,
-        uint256 assets,
-        uint256 shares
-    ) internal override whenNotPaused onlyRole(ADMIN_ROLE) {
+    function _withdraw(address caller, address receiver, address owner, uint256 assets, uint256 shares)
+        internal
+        override
+        whenNotPaused
+        onlyRole(ADMIN_ROLE)
+    {
         super._withdraw(caller, receiver, owner, assets, shares);
     }
 
     // ---- View Fonksiyonları ---- //
 
     /// @inheritdoc ITreasury
-    function getBotAllowance(
-        address token
-    ) external view override returns (uint256) {
+    function getBotAllowance(address token) external view override returns (uint256) {
         return _botAllowance[token];
     }
 
@@ -259,9 +229,7 @@ contract SlipBudTreasury is
 
     // ---- Override (ERC4626 + AccessControl çakışması) ---- //
 
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

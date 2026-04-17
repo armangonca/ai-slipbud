@@ -36,9 +36,7 @@ contract SlipBudTreasuryTest is BaseUnitTest {
         vm.prank(admin);
         treasury.adminWithdraw(weth, admin, 1e18);
 
-        uint256 afterWithdrawBalance = IERC20(weth).balanceOf(
-            address(treasury)
-        );
+        uint256 afterWithdrawBalance = IERC20(weth).balanceOf(address(treasury));
         console2.log("Treasury Balance :", afterWithdrawBalance / 1e18);
 
         uint256 afterAdminBalance = IERC20(weth).balanceOf(address(admin));
@@ -60,9 +58,7 @@ contract SlipBudTreasuryTest is BaseUnitTest {
         vm.prank(admin);
         treasury.emergencyWithdraw(weth, address(admin));
 
-        uint256 afterWithdrawBalance = IERC20(weth).balanceOf(
-            address(treasury)
-        );
+        uint256 afterWithdrawBalance = IERC20(weth).balanceOf(address(treasury));
         console2.log("Treasury Balance :", afterWithdrawBalance / 1e18);
 
         uint256 afterAdminBalance = IERC20(weth).balanceOf(address(admin));
@@ -302,6 +298,7 @@ contract SlipBudTreasuryTest is BaseUnitTest {
         treasury.pullForBot(weth, 1e18);
         vm.stopPrank();
     }
+
     function testRevertRecordProfit_NotRouter() public {
         vm.startPrank(user);
         vm.expectRevert();
@@ -349,15 +346,10 @@ contract SlipBudTreasuryTest is BaseUnitTest {
         treasury.pullForBot(weth, 10e18);
         treasury.recordProfit(weth, 2e18, 4e18);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                ITreasury.ITreasury__ExceedsDebtCeiling.selector,
-                16e18,
-                10e18
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(ITreasury.ITreasury__ExceedsDebtCeiling.selector, 16e18, 10e18));
         treasury.pullForBot(weth, 10e18);
     }
+
     function testRevertPullForBot_ZeroAmount() public {
         BaseUnitTest._fund(weth, address(treasury), 100e18);
         vm.prank(admin);
