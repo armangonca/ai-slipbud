@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.30;
 
 /// @notice Uniswap V2 Router — swap fonksiyonları
 interface IUniswapV2Router {

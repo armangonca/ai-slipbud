@@ -23,18 +23,16 @@ contract MockAavePool is IPool {
         uint256 amount,
         bytes calldata params,
         uint16 /* referralCode */
-    ) external override {
+    )
+        external
+        override
+    {
         uint256 premium = (amount * PREMIUM_BPS) / 10_000;
 
         IERC20(asset).safeTransfer(receiverAddress, amount);
 
-        bool success = IFlashLoanSimpleReceiver(receiverAddress).executeOperation(
-            asset,
-            amount,
-            premium,
-            msg.sender,
-            params
-        );
+        bool success =
+            IFlashLoanSimpleReceiver(receiverAddress).executeOperation(asset, amount, premium, msg.sender, params);
         if (!success) revert MockAave__CallbackFailed();
 
         IERC20(asset).safeTransferFrom(receiverAddress, address(this), amount + premium);

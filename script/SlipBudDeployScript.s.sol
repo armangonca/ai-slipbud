@@ -11,7 +11,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract SlipBudDeployScript is Script {
     function run() external returns (SlipBudTreasury treasury, SlipBudRouter router) {
         HelperConfig helperConfig = new HelperConfig();
-        (address weth, , , , address aaveV3Pool) = helperConfig.activeConfig();
+        (address weth,,,, address aaveV3Pool) = helperConfig.activeConfig();
 
         address bot = vm.envAddress("BOT_ADDRESS");
 

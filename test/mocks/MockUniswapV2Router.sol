@@ -46,7 +46,12 @@ contract MockUniswapV2Router is IUniswapV2Router {
         MockERC20(path[path.length - 1]).mint(current, to);
     }
 
-    function getAmountsOut(uint256 amountIn, address[] calldata path) external view override returns (uint256[] memory amounts) {
+    function getAmountsOut(uint256 amountIn, address[] calldata path)
+        external
+        view
+        override
+        returns (uint256[] memory amounts)
+    {
         amounts = new uint256[](path.length);
         amounts[0] = amountIn;
 

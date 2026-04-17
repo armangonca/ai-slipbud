@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.30;
 
 interface IRouter {
     // ---- Enums ---- //
@@ -49,7 +49,6 @@ interface IRouter {
     event TokenUpdated(address indexed token, bool allowed);
 
     // ---- Errors ---- //
-    error IRouter__SwapFailed();
     error IRouter__InsufficientOutput(uint256 expected, uint256 actual);
     error IRouter__RouterNotAllowed(address router);
     error IRouter__FlashLoanFailed();

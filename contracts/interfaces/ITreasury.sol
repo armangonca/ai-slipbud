@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.30;
 
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -19,6 +19,7 @@ interface ITreasury is IERC4626 {
     event BotAllowanceSet(address indexed token, uint256 amount);
     event EmergencyWithdraw(address indexed token, uint256 amount);
     event AdminWithdraw(address indexed token, address to, uint256 amount);
+    event MaxBotDebtSet(uint256 oldAmount, uint256 newAmount);
 
     // ---- Errors ---- //
     error ITreasury__ExceedsBotAllowance(uint256 requested, uint256 available);

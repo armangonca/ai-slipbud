@@ -9,7 +9,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract SlipBudArbitrageTest is BaseUnitTest {
     function test_executeArbitrage_profitable() public {
         // Setup: vault'a 10 WETH deposit, bot allowance 2 WETH
-        _depositAsUser(user, 10 ether);
+        _depositAsUser(admin, 10 ether);
         _setBotAllowance(weth, 2 ether);
 
         // V2'de WETH→USDC @ 1 WETH = 2000 USDC (rate 2000 * 10^6 / 1 * 10^18 = ... karmaşık)
@@ -49,12 +49,8 @@ contract SlipBudArbitrageTest is BaseUnitTest {
             deadline: block.timestamp + 300
         });
 
-        IRouter.ArbitrageParams memory params = IRouter.ArbitrageParams({
-            pullAmount: 1 ether,
-            profitToken: weth,
-            buySwap: buySwap,
-            sellSwap: sellSwap
-        });
+        IRouter.ArbitrageParams memory params =
+            IRouter.ArbitrageParams({pullAmount: 1 ether, profitToken: weth, buySwap: buySwap, sellSwap: sellSwap});
 
         uint256 balanceBefore = IERC20(weth).balanceOf(address(treasury));
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.30;
 
 import {ITreasury} from "./interfaces/ITreasury.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
@@ -65,7 +65,7 @@ contract SlipBudTreasury is
     function pullForBot(
         address token,
         uint256 amount
-    ) external override onlyRole(ROUTER_ROLE) nonReentrant whenNotPaused {
+    ) external override nonReentrant onlyRole(ROUTER_ROLE) whenNotPaused {
         if (amount == 0) revert ITreasury__ZeroAmount();
 
         uint256 currentAllowance = _botAllowance[token];
@@ -122,7 +122,7 @@ contract SlipBudTreasury is
         address token,
         address to,
         uint256 amount
-    ) external onlyRole(ADMIN_ROLE) nonReentrant {
+    ) external nonReentrant onlyRole(ADMIN_ROLE) {
         if (to == address(0)) revert ITreasury__ZeroAddress();
         if (amount == 0) revert ITreasury__ZeroAmount();
 
@@ -141,11 +141,17 @@ contract SlipBudTreasury is
         emit AdminWithdraw(token, to, amount);
     }
 
+    /// @notice Bot borç tavanını ayarla (0 = limit yok)
+    function setMaxBotDebt(uint256 amount) external onlyRole(ADMIN_ROLE) {
+        emit MaxBotDebtSet(_maxBotDebt, amount);
+        _maxBotDebt = amount;
+    }
+
     /// @inheritdoc ITreasury
     function emergencyWithdraw(
         address token,
         address to
-    ) external override onlyRole(ADMIN_ROLE) nonReentrant {
+    ) external override nonReentrant onlyRole(ADMIN_ROLE) {
         if (to == address(0)) revert ITreasury__ZeroAddress();
 
         uint256 balance = IERC20(token).balanceOf(address(this));
@@ -182,17 +188,33 @@ contract SlipBudTreasury is
     }
 
     /// @notice Bot'un aktif borcu dahil toplam varlık — share fiyatını korur.
-    function totalAssets() public view override(ERC4626, IERC4626) returns (uint256) {
+    function totalAssets()
+        public
+        view
+        override(ERC4626, IERC4626)
+        returns (uint256)
+    {
         return IERC20(asset()).balanceOf(address(this)) + _botDebt;
     }
 
-    /// @notice Pause aktifken ERC4626 deposit'i engelle
-    function _deposit(address caller, address receiver, uint256 assets, uint256 shares) internal override whenNotPaused {
+    /// @notice Sadece admin deposit yapabilir, pause aktifken engellenir
+    function _deposit(
+        address caller,
+        address receiver,
+        uint256 assets,
+        uint256 shares
+    ) internal override whenNotPaused onlyRole(ADMIN_ROLE) {
         super._deposit(caller, receiver, assets, shares);
     }
 
-    /// @notice Pause aktifken ERC4626 withdraw'u engelle
-    function _withdraw(address caller, address receiver, address owner, uint256 assets, uint256 shares) internal override whenNotPaused {
+    /// @notice Sadece admin withdraw yapabilir, pause aktifken engellenir
+    function _withdraw(
+        address caller,
+        address receiver,
+        address owner,
+        uint256 assets,
+        uint256 shares
+    ) internal override whenNotPaused onlyRole(ADMIN_ROLE) {
         super._withdraw(caller, receiver, owner, assets, shares);
     }
 
@@ -228,11 +250,6 @@ contract SlipBudTreasury is
     /// @notice Bot'un vault asset üzerindeki aktif borcu
     function getBotDebt() external view returns (uint256) {
         return _botDebt;
-    }
-
-    /// @notice Bot borç tavanını ayarla (0 = limit yok)
-    function setMaxBotDebt(uint256 amount) external onlyRole(ADMIN_ROLE) {
-        _maxBotDebt = amount;
     }
 
     /// @notice Bot borç tavanını görüntüle
